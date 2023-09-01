@@ -6,13 +6,24 @@ from streamlit_option_menu import option_menu
 import plotly.express as px
 from PIL import Image
 from collections import namedtuple
-from utilities import j
+from functions import (
+    qo,
+    qo_standing,
+    qo_darcy,
+    qo_vogel,
+    qo_ipr_compuesto,
+    aof,
+    j,
+    j_darcy,
+    Qb,
+)
+from IPR_curves import IPR_Curve,IPR_curve,IPR_curve_methods
 
 # Icon
 icon = Image.open("Resources/PetroGraphix.png")
 
 # App configuration
-st.set_page_config(page_title='PetroGraphix', page_icon=icon)
+st.set_page_config(page_title="PetroGraphix", page_icon=icon)
 
 st.markdown(
     """
@@ -32,17 +43,19 @@ footer {
 
 
 # App's title
-st.title('PetroGraphix App®')
+st.title("PetroGraphix App®")
 
-st.write('----')
+st.write("----")
 
 # App's description
-st.markdown("""This app helps you visualise production curves by year, IPR curves, 
+st.markdown(
+    """This app helps you visualise production curves by year, IPR curves, 
 perform calculations, among other things.
-""")
+"""
+)
 
 # Add aditional info
-expander = st.expander('Information about Productions Engineering:')
+expander = st.expander("Information about Productions Engineering:")
 expander.write(
     "The objective of systems analysis is to combine the various components of the \
     production system for an individual well to estimate production rates and optimize \
@@ -52,26 +65,28 @@ expander.write(
 # Add subheader
 st.subheader("**What's IPR?**")
 IPR_ = st.expander("IPR is...")
-IPR_.write("A mathematical tool used in production engineering to assess well \
+IPR_.write(
+    "A mathematical tool used in production engineering to assess well \
 performance by plotting the well production rate against the flowing bottomhole \
 pressure (BHP). The data required to create the IPR are obtained by measuring the \
 production rates under various drawdown pressures. The reservoir fluid composition and \
 behavior of the fluid phases under flowing conditions determine the shape of the \
-curve. (SLB Glossary)")
+curve. (SLB Glossary)"
+)
 
 # Add image
-image =Image.open('Resources/IPR.png')
+image = Image.open("Resources/IPR.png")
 st.image(image, width=100, use_column_width=True)
 
 # Descrption
 st.caption("*Image of a IPR curve using Vogel's method.*")
 
 # Sidebar
-logo =Image.open("Resources/PetroGraphix.png")
+logo = Image.open("Resources/PetroGraphix.png")
 st.sidebar.image(logo)
 
 # Sidebar's title
-st.sidebar.title('Navigation Menu')
+st.sidebar.title("Navigation Menu")
 
 # Upload file
 file = st.sidebar.file_uploader("Upload your xlsx file")
@@ -79,8 +94,8 @@ file = st.sidebar.file_uploader("Upload your xlsx file")
 with st.sidebar:
     options = option_menu(
         menu_title="Navigate",
-        options=['Home','Data','Curves','Calculations','Nodal Analysis'],
-        icons=['house','tv-fill','file-bar-graph-fill','file-check'],
+        options=["Home", "Data", "Curves", "Calculations", "Nodal Analysis"],
+        icons=["house", "tv-fill", "file-bar-graph-fill", "file-check"],
     )
 
 
@@ -98,47 +113,67 @@ if file:
     if options == "Data":
         data(df)
 
-    elif options == 'Curves':
+    elif options == "Curves":
         st.subheader("**Select an option to visualise the graphic**")
         if st.checkbox("Qo vs t(years)"):
             fig, ax = plt.subplots(figsize=(15, 10))
-            ax.plot(df["date"], df["oil_rate"], c='brown')
-            plt.xlabel('t (years)', fontsize=16)
-            plt.ylabel('Qo (bpd)', fontsize=16)
-            plt.title('Qo vs t(years)', fontsize=18)
+            ax.plot(df["date"], df["oil_rate"], c="brown")
+            plt.xlabel("t (years)", fontsize=16)
+            plt.ylabel("Qo (bpd)", fontsize=16)
+            plt.title("Qo vs t(years)", fontsize=18)
             st.pyplot(fig)
         elif st.checkbox("Qw vs t(years)"):
             fig1, ax1 = plt.subplots(figsize=(15, 10))
-            ax1.plot(df["date"], df["water_rate"], c='brown')
-            plt.xlabel('t (years)', fontsize=16)
-            plt.ylabel('Qw (bpd)', fontsize=16)
-            plt.title('Qw vs t(years)', fontsize=18)
+            ax1.plot(df["date"], df["water_rate"], c="brown")
+            plt.xlabel("t (years)", fontsize=16)
+            plt.ylabel("Qw (bpd)", fontsize=16)
+            plt.title("Qw vs t(years)", fontsize=18)
             st.pyplot(fig1)
         elif st.checkbox("Qt vs t(years)"):
-            dataq = (df["oil_rate"] + df["water_rate"])
+            dataq = df["oil_rate"] + df["water_rate"]
             data4 = dataq, df["date"]
             fig2, ax2 = plt.subplots(figsize=(15, 10))
             # Customizing the curve
-            ax2.plot(df["date"], dataq, c='green')
-            plt.xlabel('t (years)', fontsize=16)
-            plt.ylabel('Qt (bpd)', fontsize=16)
-            plt.title('Qt vs t(years)', fontsize=18)
+            ax2.plot(df["date"], dataq, c="green")
+            plt.xlabel("t (years)", fontsize=16)
+            plt.ylabel("Qt (bpd)", fontsize=16)
+            plt.title("Qt vs t(years)", fontsize=18)
             st.pyplot(fig2)
 
     elif options == "Calculations":
+        st.subheader("**Enter input values**")
+        q_test = st.number_input("Enter the flow rate (q_test) value: ")
+        pwf_test = st.number_input("Enter the bottom hole pressure (pwf_test) value: ")
+        pr = st.number_input("Enter the reservoir pressure (pr) value: ")
+        pwf = st.number_input("Enter the bottom hole pressure value (pwf) to analize: ")
+        pb = st.number_input("Enter the buble point pressure (pb) value: ")
+        ef = st.number_input("Enter the value of ef: ")
+        ef2 = st.number_input("Enter the value of ef2: ")
         st.subheader("**Select an option**")
+        data = namedtuple("Input", "q_test pwf_test pr pwf pb ef ef2")
         if st.checkbox("J"):
-            data = namedtuple("Input","q_test pr pwf_test")
-            st.subheader("**Enter input values**")
-            pr = st.number_input("**Enter the reservoir pressure value: **")
-            pwf_test = st.number_input("**Enter the bottom hole pressure value: **")
-            q_test = st.number_input("**Enter the flow rate value value: **")
-            pb = st.subheader("**Enter the buble point preassure value: **")
             st.subheader("**Show results**")
-            #j(q_test,pwf_test,pr,pb,ef=1,ef2=None)
+            ind = j(q_test, pwf_test, pr, pb, ef=1, ef2=None)
+            st.success(f"{'J is'} -> {ind:.2f} stb/psi")
+        elif st.checkbox("AOF"):
+            st.subheader("**Show results**")
+            qmax = aof(q_test, pwf_test, pr, pb, ef=1, ef2=None)
+            st.success(f"{'AOF is'} -> {qmax:.2f} stb/d")
+        elif st.checkbox("Qo"):
+            st.subheader("**Show results**")
+            qo = qo(q_test,pwf_test,pr,pwf,pb,ef=1,ef2=None)
+            st.success(f"{'Qo is'} -> {qo:.2f} stb/d")
+        elif st.checkbox("Qb"):
+            st.subheader("**Show results**")
+            qb = Qb(q_test, pwf_test, pr, pb, ef=1, ef2=None)
+            st.success(f"{'Qb is'} -> {qb:.2f} stb/d")
 
-        #elif st.checkbox("AOF"):
+        st.subheader('**Select this options if you want to visualise the IPR curves**')
+        if st.checkbox('IPR Curves'):
+            pwf = [pr-200,pr-400,pr-800,pr-1000,pr-1200,pr-1400,pr-1600,pr-18000,
+                   pr-2000,pr-2200,pr-2400,pr-2600,pr-2800,pr-3000,pr-3200]
+            ipr = IPR_Curve(q_test, pwf_test, pr, pwf, pb)
+            st.pyplot(ipr)
 
-    #elif options == "Nodal Analysis":
-
-
+    elif options == "Nodal Analysis":
+        st.subheader("**Enter input values**")
