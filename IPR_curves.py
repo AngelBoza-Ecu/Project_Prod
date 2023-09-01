@@ -66,6 +66,7 @@ def IPR_curve_methods(q_test, pwf_test, pr, pwf, pb, method, ef=1, ef2=None):
             lambda x: qo_standing(q_test, pwf_test, pr, pwf, pb, ef=1, ef2=None)
         )
     # Stand the axis of the IPR plot
+    print(df["Qo(bpd)"])
     x = df["Qo(bpd)"]
     y = df["Pwf(psia)"]
     # The following steps are used to smooth the curve
@@ -90,7 +91,6 @@ def IPR_curve_methods(q_test, pwf_test, pr, pwf, pb, method, ef=1, ef2=None):
     plt.axvline(x=Qb(q_test, pwf_test, pr, pb), color="r", linestyle="--")
     ax.grid()
     plt.show()
-
 
 # %%
 # IPR Curve

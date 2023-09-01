@@ -1,4 +1,5 @@
 # Import Python libraries
+import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
 import pandas as pd
@@ -171,37 +172,28 @@ if file:
 
         st.subheader("**Select this options if you want to visualise the IPR curves**")
         if st.checkbox("IPR Curves"):
+            st.subheader("**Select method**")
+            method = st.selectbox("Method", ("Darcy", "Vogel", "IPR Compuesto"))
+            Data = namedtuple("Input", "qtest pwftest pre pwfl Pb Ef Ef2")
+            st.subheader("**Enter input values**")
+
             qtest = st.number_input("Enter the flow rate (qtest) value: ")
             pwftest = st.number_input(
                 "Enter the bottom hole pressure (pwftest) value: "
             )
             pre = st.number_input("Enter the reservoir pressure (pre) value: ")
-            pwfl = st.number_input(
-                "Enter the bottom hole pressure value (pwfl) to analize: "
-            )
             Pb = st.number_input("Enter the buble point pressure (Pb) value: ")
-            Ef = st.number_input("Enter the value of Ef: ")
-            Ef2 = st.number_input("Enter the value of Ef2: ")
-            data = namedtuple("Input", "qtest pwftest pre pwfl Pb Ef Ef2")
-            pwf1 = [
-                pr - 200,
-                pr - 400,
-                pr - 800,
-                pr - 1000,
-                pr - 1200,
-                pr - 1400,
-                pr - 1600,
-                pr - 18000,
-                pr - 2000,
-                pr - 2200,
-                pr - 2400,
-                pr - 2600,
-                pr - 2800,
-                pr - 3000,
-                pr - 3200,
-            ]
-            ipr = IPR_Curve(qtest, pwftest, pre, pwfl, Pb, ef=1, ef2=None, ax=None)
-            st.pyplot(ipr)
+
+            pwf_l = []
+            for i in range(0, int((pre + 100)), 100):
+                pwf_l.append(i)
+            pwf_l.reverse()
+            pwf_a = np.array(pwf_l, dtype=int)
+
+            ipr_ = IPR_curve_methods(
+                qtest, pwftest, pre, pwf_a, Pb, method, ef=1, ef2=None
+            )
+            st.pyplot(ipr_)
 
     elif options == "Nodal Analysis":
         st.subheader("**Enter input values**")
