@@ -1,4 +1,6 @@
 # Import Python libraries
+import warnings
+
 import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
@@ -18,6 +20,7 @@ from functions import (
     j_darcy,
     Qb,
 )
+warnings.filterwarnings('ignore')
 from IPR_curves import IPR_Curve, IPR_curve, IPR_curve_methods
 from nodal_analysis import sg_avg, sg_oil, pwf_vogel, pwf_darcy, f_darcy, gradient_avg
 
@@ -118,29 +121,32 @@ if file:
     elif options == "Curves":
         st.subheader("**Select an option to visualise the graphic**")
         if st.checkbox("Qo vs t(years)"):
-            fig, ax = plt.subplots(figsize=(15, 10))
+            fig, ax = plt.subplots(figsize=(10, 5))
             ax.plot(df["date"], df["oil_rate"], c="brown")
-            plt.xlabel("t (years)", fontsize=16)
-            plt.ylabel("Qo (bpd)", fontsize=16)
-            plt.title("Qo vs t(years)", fontsize=18)
-            st.pyplot(fig)
+            plt.xlabel("t (years)", fontsize=16,c='white')
+            plt.ylabel("Qo (bpd)", fontsize=16,c='white')
+            plt.title("Qo vs t(years)", fontsize=18,c='white')
+            plt.grid()
+            st.plotly_chart(fig)
         elif st.checkbox("Qw vs t(years)"):
-            fig1, ax1 = plt.subplots(figsize=(15, 10))
-            ax1.plot(df["date"], df["water_rate"], c="brown")
-            plt.xlabel("t (years)", fontsize=16)
-            plt.ylabel("Qw (bpd)", fontsize=16)
-            plt.title("Qw vs t(years)", fontsize=18)
-            st.pyplot(fig1)
+            fig1, ax1 = plt.subplots(figsize=(10, 5))
+            ax1.plot(df["date"], df["water_rate"], c="blue")
+            plt.xlabel("t (years)", fontsize=16,c='white')
+            plt.ylabel("Qw (bpd)", fontsize=16,c='white')
+            plt.title("Qw vs t(years)", fontsize=18,c='white')
+            plt.grid()
+            st.plotly_chart(fig1)
         elif st.checkbox("Qt vs t(years)"):
             dataq = df["oil_rate"] + df["water_rate"]
             data4 = dataq, df["date"]
-            fig2, ax2 = plt.subplots(figsize=(15, 10))
+            fig2, ax2 = plt.subplots(figsize=(10, 5))
             # Customizing the curve
             ax2.plot(df["date"], dataq, c="green")
-            plt.xlabel("t (years)", fontsize=16)
-            plt.ylabel("Qt (bpd)", fontsize=16)
-            plt.title("Qt vs t(years)", fontsize=18)
-            st.pyplot(fig2)
+            plt.xlabel("t (years)", fontsize=16,c='white')
+            plt.ylabel("Qt (bpd)", fontsize=16,c='white')
+            plt.title("Qt vs t(years)", fontsize=18,c='white')
+            plt.grid()
+            st.plotly_chart(fig2)
 
     elif options == "Calculations":
         st.subheader("**Enter input values**")
@@ -190,6 +196,7 @@ if file:
             ipr_ = IPR_curve_methods(
                 qtest, pwftest, pre, pwf_a, Pb, method, ef=1, ef2=None
             )
+            st.set_option('deprecation.showPyplotGlobalUse', False)
             st.pyplot(ipr_)
 
     elif options == "Nodal Analysis":
