@@ -147,6 +147,12 @@ if file:
             plt.title("Qt vs t(years)", fontsize=18,c='white')
             plt.grid()
             st.plotly_chart(fig2)
+        elif st.checkbox("Qo per well"):
+            fig3,ax3 = plt.subplots(figsize=(10,10))
+            ax3.bar(x=df['well_name'], height=df["oil_rate"])
+            ax3.set_xlabel("Well_name",fontsize=16,c='white')
+            ax3.set_ylabel("Oil_rate",fontsize=16,c='white')
+            st.pyplot(fig3)
 
     elif options == "Calculations":
         st.subheader("**Enter input values**")
