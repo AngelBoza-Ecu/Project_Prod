@@ -18,6 +18,7 @@ from functions import (
     Qb,
 )
 from IPR_curves import IPR_Curve,IPR_curve,IPR_curve_methods
+from nodal_analysis import sg_avg,sg_oil,pwf_vogel,pwf_darcy,f_darcy,gradient_avg
 
 # Icon
 icon = Image.open("Resources/PetroGraphix.png")
@@ -177,3 +178,39 @@ if file:
 
     elif options == "Nodal Analysis":
         st.subheader("**Enter input values**")
+        API = st.number_input("Enter the API of the fluid: ")
+        pr = st.number_input("Enter the reservoir pressure (pr) value: ")
+        pb = st.number_input("Enter the buble point pressure (pb) value: ")
+        q_test = st.number_input("Enter the maximum value of the flow rate: ")
+        pfwt = st.number_input("Enter the value of the total bottom hole pressure: ")
+        THP = st.number_input("Enter the value of THP: ")
+        wc = st.number_input("Enter the value of the water saturation: ")
+        SGh2o = st.number_input("Enter the value of the specific weight of the water: ")
+        ID = st.number_input("Enter the value of the internal diameter: ")
+        TVD = st.number_input("Enter the value of the True Vertical Depth (TVD): ")
+        MD = st.number_input("Enter the value of the Measured Depth: ")
+
+        q = [0, 750, 1400, 2250, 3000, 3750, 4500, 5250, 6000]
+
+        df = pd.DataFrame()
+        data = namedtuple('Input', 'API pr pb qt pwft THP wc SGh2o ID TVD MD')
+        for t in q:
+            pwf = pwf_darcy(q_test, pfwt, t, pr, pb)
+            Ind = j(q_test, pfwt, pr, pb, ef=1, ef2=None)
+            qmax = Ind*pr
+            sva = sg_avg(API, wc, SGh2o)
+            grad = gradient_avg(API, wc, SGh2o)
+            pgrad = TVD*grad
+            f = f_darcy(t, ID, C=120)
+            F = f*MD
+            pf = F * grad
+            Po = THP + grad + pf
+            psys = Po - pwf
+
+            tabla = pd.DataFrame({'Q':[t],'Pwf':[pwf],'THP':[THP],'PGravedad':[pgrad],
+                                  'f':[f],'F':[F],'Pf':[pf],'Po':[Po],'Psys':[psys]})
+            df = pd.concat([df,tabla], ignore_index=True)
+
+        st.success(df.to_markdown())
+
+
