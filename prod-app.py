@@ -17,8 +17,8 @@ from functions import (
     j_darcy,
     Qb,
 )
-from IPR_curves import IPR_Curve,IPR_curve,IPR_curve_methods
-from nodal_analysis import sg_avg,sg_oil,pwf_vogel,pwf_darcy,f_darcy,gradient_avg
+from IPR_curves import IPR_Curve, IPR_curve, IPR_curve_methods
+from nodal_analysis import sg_avg, sg_oil, pwf_vogel, pwf_darcy, f_darcy, gradient_avg
 
 # Icon
 icon = Image.open("Resources/PetroGraphix.png")
@@ -162,18 +162,45 @@ if file:
             st.success(f"{'AOF is'} -> {qmax:.2f} stb/d")
         elif st.checkbox("Qo"):
             st.subheader("**Show results**")
-            qo = qo(q_test,pwf_test,pr,pwf,pb,ef=1,ef2=None)
+            qo = qo(q_test, pwf_test, pr, pwf, pb, ef=1, ef2=None)
             st.success(f"{'Qo is'} -> {qo:.2f} stb/d")
         elif st.checkbox("Qb"):
             st.subheader("**Show results**")
             qb = Qb(q_test, pwf_test, pr, pb, ef=1, ef2=None)
             st.success(f"{'Qb is'} -> {qb:.2f} stb/d")
 
-        st.subheader('**Select this options if you want to visualise the IPR curves**')
-        if st.checkbox('IPR Curves'):
-            pwf = [pr-200,pr-400,pr-800,pr-1000,pr-1200,pr-1400,pr-1600,pr-18000,
-                   pr-2000,pr-2200,pr-2400,pr-2600,pr-2800,pr-3000,pr-3200]
-            ipr = IPR_Curve(q_test, pwf_test, pr, pwf, pb)
+        st.subheader("**Select this options if you want to visualise the IPR curves**")
+        if st.checkbox("IPR Curves"):
+            qtest = st.number_input("Enter the flow rate (qtest) value: ")
+            pwftest = st.number_input(
+                "Enter the bottom hole pressure (pwftest) value: "
+            )
+            pre = st.number_input("Enter the reservoir pressure (pre) value: ")
+            pwfl = st.number_input(
+                "Enter the bottom hole pressure value (pwfl) to analize: "
+            )
+            Pb = st.number_input("Enter the buble point pressure (Pb) value: ")
+            Ef = st.number_input("Enter the value of Ef: ")
+            Ef2 = st.number_input("Enter the value of Ef2: ")
+            data = namedtuple("Input", "qtest pwftest pre pwfl Pb Ef Ef2")
+            pwf1 = [
+                pr - 200,
+                pr - 400,
+                pr - 800,
+                pr - 1000,
+                pr - 1200,
+                pr - 1400,
+                pr - 1600,
+                pr - 18000,
+                pr - 2000,
+                pr - 2200,
+                pr - 2400,
+                pr - 2600,
+                pr - 2800,
+                pr - 3000,
+                pr - 3200,
+            ]
+            ipr = IPR_Curve(qtest, pwftest, pre, pwfl, Pb, ef=1, ef2=None, ax=None)
             st.pyplot(ipr)
 
     elif options == "Nodal Analysis":
@@ -193,24 +220,33 @@ if file:
         q = [0, 750, 1400, 2250, 3000, 3750, 4500, 5250, 6000]
 
         df = pd.DataFrame()
-        data = namedtuple('Input', 'API pr pb qt pwft THP wc SGh2o ID TVD MD')
+        data = namedtuple("Input", "API pr pb qt pwft THP wc SGh2o ID TVD MD")
         for t in q:
             pwf = pwf_darcy(q_test, pfwt, t, pr, pb)
             Ind = j(q_test, pfwt, pr, pb, ef=1, ef2=None)
-            qmax = Ind*pr
+            qmax = Ind * pr
             sva = sg_avg(API, wc, SGh2o)
             grad = gradient_avg(API, wc, SGh2o)
-            pgrad = TVD*grad
+            pgrad = TVD * grad
             f = f_darcy(t, ID, C=120)
-            F = f*MD
+            F = f * MD
             pf = F * grad
-            Po = THP + grad + pf
+            Po = THP + pgrad + pf
             psys = Po - pwf
 
-            tabla = pd.DataFrame({'Q':[t],'Pwf':[pwf],'THP':[THP],'PGravedad':[pgrad],
-                                  'f':[f],'F':[F],'Pf':[pf],'Po':[Po],'Psys':[psys]})
-            df = pd.concat([df,tabla], ignore_index=True)
+            tabla = pd.DataFrame(
+                {
+                    "Q (bpd)": [t],
+                    "Pwf (psia)": [pwf],
+                    "THP (psia)": [THP],
+                    "PGravedad (psia)": [pgrad],
+                    "f": [f],
+                    "F": [F],
+                    "Pf (psia)": [pf],
+                    "Po (psia)": [Po],
+                    "Psys (psia)": [psys],
+                }
+            )
+            df = pd.concat([df, tabla], ignore_index=True)
 
         st.success(df.to_markdown())
-
-
