@@ -176,11 +176,9 @@ if file:
             method = st.selectbox("Method", ("Darcy", "Vogel", "IPR Compuesto"))
             Data = namedtuple("Input", "qtest pwftest pre pwfl Pb Ef Ef2")
             st.subheader("**Enter input values**")
-
             qtest = st.number_input("Enter the flow rate (qtest) value: ")
             pwftest = st.number_input(
-                "Enter the bottom hole pressure (pwftest) value: "
-            )
+                "Enter the bottom hole pressure (pwftest) value: ")
             pre = st.number_input("Enter the reservoir pressure (pre) value: ")
             Pb = st.number_input("Enter the buble point pressure (Pb) value: ")
 
@@ -189,7 +187,6 @@ if file:
                 pwf_l.append(i)
             pwf_l.reverse()
             pwf_a = np.array(pwf_l, dtype=int)
-
             ipr_ = IPR_curve_methods(
                 qtest, pwftest, pre, pwf_a, Pb, method, ef=1, ef2=None
             )
