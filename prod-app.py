@@ -9,7 +9,7 @@ from collections import namedtuple
 from utilities import j
 
 # Icon
-icon =Image.open("Resources/PetroGraphix.png")
+icon = Image.open("Resources/PetroGraphix.png")
 
 # App configuration
 st.set_page_config(page_title='PetroGraphix', page_icon=icon)
@@ -32,7 +32,7 @@ footer {
 
 
 # App's title
-st.title('PetroGraphix')
+st.title('PetroGraphix App®')
 
 st.write('----')
 
@@ -57,11 +57,14 @@ performance by plotting the well production rate against the flowing bottomhole 
 pressure (BHP). The data required to create the IPR are obtained by measuring the \
 production rates under various drawdown pressures. The reservoir fluid composition and \
 behavior of the fluid phases under flowing conditions determine the shape of the \
-curve.")
+curve. (SLB Glossary)")
 
 # Add image
 image =Image.open('Resources/IPR.png')
 st.image(image, width=100, use_column_width=True)
+
+# Descrption
+st.caption("*Image of a IPR curve using Vogel's method.*")
 
 # Sidebar
 logo =Image.open("Resources/PetroGraphix.png")
@@ -88,18 +91,6 @@ def data(field):
     st.subheader("**Statistical Summary**")
     st.write(field.describe())
 
-def plots(field):
-    st.subheader("Visualise curves")
-    x = st.selectbox("Choose Date", field.columns)
-    y = st.selectbox("Choose between Oil_rate or Water_rate", field.columns)
-    st.subheader("**The curve is: **")
-    fig,ax = plt.subplots()
-    ax.plot(x,y)
-    plt.title("Flow rate")
-    plt.xlabel('Years')
-    plt.ylabel('Barrels per day')
-    st.pyplot(fig)
-
 
 if file:
     df = pd.read_excel(file)
@@ -108,18 +99,46 @@ if file:
         data(df)
 
     elif options == 'Curves':
-        qvt = st.selectbox("***Qo vs t(años)***")
-        wvt = st.selectbox("***Qw vs t(años)***")
-
-        plots(df)
+        st.subheader("**Select an option to visualise the graphic**")
+        if st.checkbox("Qo vs t(years)"):
+            fig, ax = plt.subplots(figsize=(15, 10))
+            ax.plot(df["date"], df["oil_rate"], c='brown')
+            plt.xlabel('t (years)', fontsize=16)
+            plt.ylabel('Qo (bpd)', fontsize=16)
+            plt.title('Qo vs t(years)', fontsize=18)
+            st.pyplot(fig)
+        elif st.checkbox("Qw vs t(years)"):
+            fig1, ax1 = plt.subplots(figsize=(15, 10))
+            ax1.plot(df["date"], df["water_rate"], c='brown')
+            plt.xlabel('t (years)', fontsize=16)
+            plt.ylabel('Qw (bpd)', fontsize=16)
+            plt.title('Qw vs t(years)', fontsize=18)
+            st.pyplot(fig1)
+        elif st.checkbox("Qt vs t(years)"):
+            dataq = (df["oil_rate"] + df["water_rate"])
+            data4 = dataq, df["date"]
+            fig2, ax2 = plt.subplots(figsize=(15, 10))
+            # Customizing the curve
+            ax2.plot(df["date"], dataq, c='green')
+            plt.xlabel('t (years)', fontsize=16)
+            plt.ylabel('Qt (bpd)', fontsize=16)
+            plt.title('Qt vs t(years)', fontsize=18)
+            st.pyplot(fig2)
 
     elif options == "Calculations":
+        st.subheader("**Select an option**")
         if st.checkbox("J"):
-            data = namedtuple("Input","Qo Pr Pwf")
+            data = namedtuple("Input","q_test pr pwf_test")
             st.subheader("**Enter input values**")
             pr = st.number_input("**Enter the reservoir pressure value: **")
             pwf_test = st.number_input("**Enter the bottom hole pressure value: **")
             q_test = st.number_input("**Enter the flow rate value value: **")
             pb = st.subheader("**Enter the buble point preassure value: **")
             st.subheader("**Show results**")
-            j(q_test,pwf_test,pr,pb,ef=1,ef2=None)
+            #j(q_test,pwf_test,pr,pb,ef=1,ef2=None)
+
+        #elif st.checkbox("AOF"):
+
+    #elif options == "Nodal Analysis":
+
+

@@ -1,4 +1,10 @@
 # import libraries
+from collections import namedtuple
+import streamlit as st
+
+#%%
+Data = namedtuple('Input', "q_test pr pwf_test")
+Output = namedtuple('Output',"J")
 
 def j(q_test, pwf_test, pr, pb, ef=1, ef2=None):
     if ef == 1:
@@ -20,4 +26,4 @@ def j(q_test, pwf_test, pr, pb, ef=1, ef2=None):
             J = ((q_test / ((pr - pb) + (pb / 1.8) *
                             (1.8 * (1 - pwf_test / pb) - 0.8 *
                              ef * (1 - pwf_test / pb)**2))) / ef) * ef2
-    return J
+    return st.success(J)
